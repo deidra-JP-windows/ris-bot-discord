@@ -21,16 +21,17 @@ DATE_FORMATS = [
     '%m月%d日',  # 9月6日
 
     # --- 月 日 の順 ---
-    '%m/%d',      # 09/06
-    '%m-%d',      # 09-06
-    '%m.%d',      # 09.06
+    '%m/%d',  # 09/06
+    '%m-%d',  # 09-06
+    '%m.%d',  # 09.06
     # --- 年を含むが、月日を抽出したい場合 ---
-    '%Y-%m-%d',   # 2025-09-06
-    '%Y/%m/%d',   # 2025/09/06
-    '%m/%d/%Y',   # 09/06/2025
-    '%d-%m-%Y',   # 06-09-2025
-    '%Y年%m月%d日', # 2025年9月6日
+    '%Y-%m-%d',  # 2025-09-06
+    '%Y/%m/%d',  # 2025/09/06
+    '%m/%d/%Y',  # 09/06/2025
+    '%d-%m-%Y',  # 06-09-2025
+    '%Y年%m月%d日',  # 2025年9月6日
 ]
+
 
 def _convert_kansuji_to_number(kanji_str: str) -> int:
     """漢数字の文字列（一から三十一まで）を整数に変換するヘルパー関数"""
@@ -77,6 +78,7 @@ def _preprocess_kansuji_date(date_string: str) -> str:
     # マッチしない場合は、元の文字列をそのまま返す
     return date_string
 
+
 def _day_formatter(date_string: str) -> str | None:
     """
     様々なフォーマットの日付文字列を 'MM/DD' 形式に変換する関数。
@@ -115,7 +117,9 @@ async def on_ready():
     today = _day_formatter(f'{datetime.now().month}/{datetime.now().day}')
     members = birthdays.get(today)
     if members:
-        await client.get_channel(CHANNEL_ID).send(f'@everyone\n今日は{"と".join([f" {mem}さん " for mem in members])}の誕生日です！！！皆でお祝いしましょう！！！')
+        await client.get_channel(CHANNEL_ID).send(
+            f'@everyone\n今日は{"と".join([f" {mem}さん " for mem in members])}の誕生日です！！！皆でお祝いしましょう！！！')
+
 
 if __name__ == "__main__":
     client.run(TOKEN)
