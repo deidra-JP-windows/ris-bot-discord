@@ -129,5 +129,6 @@ async def on_ready():
         await client.get_channel(SEND_CHANNEL_ID).send(
             f'@everyone\n今日は{"と".join([f" {mem}さん " for mem in members])}の誕生日です！！！皆でお祝いしましょう！！！')
 
+
 if __name__ == "__main__":
     client.run(TOKEN)
