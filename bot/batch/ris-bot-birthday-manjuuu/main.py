@@ -7,7 +7,8 @@ from datetime import datetime
 # env読み込み
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
+READ_CHANNEL_ID = int(os.getenv("READ_CHANNEL_ID"))
+SEND_CHANNEL_ID = int(os.getenv("SEND_CHANNEL_ID"))
 
 intents = discord.Intents.default()
 intents.messages = True
@@ -95,7 +96,15 @@ def _day_formatter(date_string: str) -> str | None:
     for fmt in DATE_FORMATS:
         try:
             # 処理後の文字列で照合を試みる
-            dt_object = datetime.strptime(processed_string, fmt)
+            # 年を含まないフォーマットの場合、うるう年(2024年)を補ってチェック
+            if '%Y' not in fmt and '%y' not in fmt:
+                # 日付文字列とフォーマットの両方に年を追加
+                temp_date_str = f"{processed_string} 2024"
+                temp_fmt = f"{fmt} %Y"
+                dt_object = datetime.strptime(temp_date_str, temp_fmt)
+            else:
+                # 年を含むフォーマットはそのままチェック
+                dt_object = datetime.strptime(processed_string, fmt)
             return dt_object.strftime('%m/%d')
         except ValueError:
             continue
@@ -107,19 +116,19 @@ def _day_formatter(date_string: str) -> str | None:
 async def on_ready():
     """起動時に呼び出される関数"""
     birthdays = {}
-    async for message in client.get_channel(CHANNEL_ID).history(limit=None):
+    async for message in client.get_channel(READ_CHANNEL_ID).history(limit=None):
         # 過去のメッセージに対する処理
         if message.author != client.user:
             date = _day_formatter(message.content)
             if date is not None:
                 birthdays.setdefault(date, set())
                 birthdays[date].add(message.author.global_name)
-    today = _day_formatter(f'{datetime.now().month}/{datetime.now().day}')
+    today = f'{str(datetime.now().month).zfill(2)}/{str(datetime.now().day).zfill(2)}'
     members = birthdays.get(today)
     if members:
-        await client.get_channel(CHANNEL_ID).send(
+        await client.get_channel(SEND_CHANNEL_ID).send(
             f'@everyone\n今日は{"と".join([f" {mem}さん " for mem in members])}の誕生日です！！！皆でお祝いしましょう！！！')
-
+    print(birthdays)
 
 if __name__ == "__main__":
     client.run(TOKEN)
