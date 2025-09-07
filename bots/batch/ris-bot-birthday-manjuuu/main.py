@@ -8,8 +8,8 @@ from datetime import datetime
 load_dotenv()
 # Repository secretsから取得する環境変数名に統一
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-READ_CHANNEL_ID = int(os.getenv("READ_CHANNEL_ID"))
-SEND_CHANNEL_ID = int(os.getenv("SEND_CHANNEL_ID"))
+READ_BIRTHDAY_CHANNEL_ID = int(os.getenv("READ_BIRTHDAY_CHANNEL_ID"))
+SEND_GENERAL_CHANNEL_ID = int(os.getenv("SEND_GENERAL_CHANNEL_ID"))
 
 intents = discord.Intents.default()
 intents.messages = True
@@ -117,7 +117,7 @@ def _day_formatter(date_string: str) -> str | None:
 async def on_ready():
     """起動時に呼び出される関数"""
     birthdays = {}
-    async for message in client.get_channel(READ_CHANNEL_ID).history(limit=None):
+    async for message in client.get_channel(READ_BIRTHDAY_CHANNEL_ID).history(limit=None):
         # 過去のメッセージに対する処理
         if message.author != client.user:
             date = _day_formatter(message.content)
@@ -127,7 +127,7 @@ async def on_ready():
     today = datetime.today().strftime('%m/%d')
     members = birthdays.get(today)
     if members:
-        await client.get_channel(SEND_CHANNEL_ID).send(
+        await client.get_channel(SEND_GENERAL_CHANNEL_ID).send(
             f'@everyone\n今日は{"と".join([f" {mem}さん " for mem in members])}の誕生日です！！！皆でお祝いしましょう！！！')
 
 
