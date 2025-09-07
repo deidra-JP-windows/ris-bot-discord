@@ -1,0 +1,34 @@
+name: Scheduled Batch Bots UTC 0
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-batch-bots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run all batch bots
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          READ_BIRTHDAY_CHANNEL_ID: '1396340526009028700'
+          SEND_GENERAL_CHANNEL_ID: '1362073632821612706'
+        run: |
+          for d in bots/batch/*/; do
+            echo "Running bot in $d"
+            if [ -f "$d/requirements.txt" ]; then
+              pip install -r "$d/requirements.txt"
+            fi
+            if [ -f "$d/main.py" ]; then
+              python "$d/main.py"
+            fi
+          done

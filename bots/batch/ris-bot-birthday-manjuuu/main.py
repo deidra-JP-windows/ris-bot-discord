@@ -6,7 +6,8 @@ from datetime import datetime
 
 # env読み込み
 load_dotenv()
-TOKEN = os.getenv("TOKEN")
+# Repository secretsから取得する環境変数名に統一
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 READ_CHANNEL_ID = int(os.getenv("READ_CHANNEL_ID"))
 SEND_CHANNEL_ID = int(os.getenv("SEND_CHANNEL_ID"))
 
@@ -131,4 +132,4 @@ async def on_ready():
 
 
 if __name__ == "__main__":
-    client.run(TOKEN)
+    client.run(DISCORD_BOT_TOKEN)
