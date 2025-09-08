@@ -1,8 +1,8 @@
-name: Scheduled Batch Bots UTC 0
+name: Scheduled Batch Bots JST 0
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 jobs:
