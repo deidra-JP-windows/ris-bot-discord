@@ -2,7 +2,7 @@ import re
 import discord
 import os
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # env読み込み
 load_dotenv()
@@ -124,12 +124,12 @@ async def on_ready():
             if date is not None:
                 birthdays.setdefault(date, set())
                 birthdays[date].add(message.author.global_name)
-    today = datetime.today().strftime('%m/%d')
+    today = (datetime.utcnow() + timedelta(hours=9)).strftime('%m/%d')
     members = birthdays.get(today)
     if members:
         await client.get_channel(SEND_GENERAL_CHANNEL_ID).send(
             f'@everyone\n今日は{"と".join([f" {mem}さん " for mem in members])}の誕生日です！！！皆でお祝いしましょう！！！')
-
+    await client.close()
 
 if __name__ == "__main__":
     client.run(DISCORD_BOT_TOKEN)
