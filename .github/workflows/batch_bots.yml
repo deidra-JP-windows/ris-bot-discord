@@ -25,6 +25,10 @@ jobs:
         run: |
           for d in bots/batch/*/; do
             echo "Running bot in $d"
+            echo "Environment Variables:"
+            echo "  DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:0:4}****"
+            echo "  READ_BIRTHDAY_CHANNEL_ID: $READ_BIRTHDAY_CHANNEL_ID"
+            echo "  SEND_GENERAL_CHANNEL_ID: $SEND_GENERAL_CHANNEL_ID"
             if [ -f "$d/requirements.txt" ]; then
               pip install -r "$d/requirements.txt"
             fi
