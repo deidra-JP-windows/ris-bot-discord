@@ -8,31 +8,32 @@
 ## 作成手順
 ### 1. Botアカウントの作成
 - [Discord Developer Portal](https://discord.com/developers/applications)にアクセス
-- 「New Application」→名前を入力→[Create]
-![alt text](img/image.png)
+- 「New Application」→名前を入力→プライバシーポリシーに同意し[Create]
+![Discord Developer Portal](img/image.png)
 
 ### 2. Botをサーバーに招待
 - 左メニュー「OAuth2」→「OAuth2 URL Generator」
 - 「SCOPES」で「bot」を選択
-![alt text](img/image-1.png)
 - 「BOT PERMISSIONS」で必要な権限（例: Send Messages, Read Message History）を選択
 - 生成されたURLからBotをサーバーに追加
+
+![SCOPESの右欄の上から3番目](img/image-1.png)
 
 ### 3. TOKENを取得
 
 - 左メニュー「Bot」→「Reset Token」
 - [Yes, do it!]
 
-![alt text](img/image-2.png)
+![RESET BOT'S TOKEN?](img/image-2.png)
 
 - 生成されたTOKENをコピーして誰にも見られない場所に保存する
 
 ### 4. メッセージ権限の付与
 
-- 左メニュー「Bot」→「Message Content Intent」をオン
+- 左メニュー「Bot」→「Message Content Intent」をオン→変更を保存
 - これをオンにしてないとメッセージを送信できない
 
-![alt text](img/image-3.png)
+![Message Content Intent](img/image-3.png)
 
 ### 5. Botのコードを書く
 - `main.py`という名前のファイルを作成し，以下をコピペ
