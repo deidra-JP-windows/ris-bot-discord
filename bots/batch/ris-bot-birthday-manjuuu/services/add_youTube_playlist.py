@@ -1,8 +1,8 @@
 import re
 import os
 import discord
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
+from apiclient.discovery import build
+from apiclient.errors import HttpError
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
@@ -14,65 +14,36 @@ YOUTUBE_URL_PATTERN = re.compile(r"https?://(?:www\\.)?(?:youtube\\.com/watch\\?
 load_dotenv()
 # Repository secretsから取得する環境変数名に統一
 READ_MUSIC_CHANNEL_ID = int(os.getenv("READ_MUSIC_CHANNEL_ID"))
-READ_MUSIC_LIST_CHANNEL_ID = int(os.getenv("READ_MUSIC_LIST_CHANNEL_ID"))
-SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
 
-# YouTube Playlist ID (環境変数から取得)
+DEVELOPER_KEY = os.getenv("DEVELOPER_KEY")
+YOUTUBE_API_SERVICE_NAME = 'youtube'
+YOUTUBE_API_VERSION = 'v3'
 YOUTUBE_PLAYLIST_ID = os.getenv("YOUTUBE_PLAYLIST_ID")
-SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 
-def get_youtube_service():
+youtube = build(
+    YOUTUBE_API_SERVICE_NAME,
+    YOUTUBE_API_VERSION,
+    developerKey=DEVELOPER_KEY
+)
+
+
+async def fetch_playlist_videos():
     """
-    サービスアカウント認証でYouTube APIクライアントを取得
+    プレイリスト内の動画タイトルとURLをタプルで取得
     """
-    credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-    return build("youtube", "v3", credentials=credentials)
-
-
-def add_videos_to_playlist(video_urls, playlist_id):
-    """
-    指定したYouTube動画URLリストをプレイリストに追加
-    """
-    youtube = get_youtube_service()
-    for url in video_urls:
-        # 動画ID抽出
-        m = re.search(r"(?:v=|youtu.be/)([\w-]{11})", url)
-        if not m:
-            continue
-        video_id = m.group(1)
-        try:
-            youtube.playlistItems().insert(
-                part="snippet",
-                body={
-                    "snippet": {
-                        "playlistId": playlist_id,
-                        "resourceId": {
-                            "kind": "youtube#video",
-                            "videoId": video_id
-                        }
-                    }
-                }
-            ).execute()
-        except Exception as e:
-            print(f"Failed to add {video_id}: {e}")
-
-
-async def add_youTube_playlist_main(client: 'discord.Client'):
-    print("start: add_youTube_playlist_main")
-    try:
-        urls = await get_last_week_youtube_urls(client)
-        if not urls:
-            await client.get_channel(READ_MUSIC_LIST_CHANNEL_ID).send('先週分のYouTube動画は見つかりませんでした。')
-            print("No YouTube URLs found.")
-            return
-        add_videos_to_playlist(urls, YOUTUBE_PLAYLIST_ID)
-        await client.get_channel(READ_MUSIC_LIST_CHANNEL_ID).send(f'{len(urls)}件のYouTube動画をプレイリストに追加しました。')
-        print(f"Added {len(urls)} videos to playlist.")
-    except Exception as e:
-        await client.get_channel(READ_MUSIC_LIST_CHANNEL_ID).send(f'エラーが発生しました: {e}')
-        print(f"Error: {e}")
-    print("end: add_youTube_playlist_main")
+    videos = []
+    request = youtube.playlistItems().list(
+        part='snippet',
+        playlistId=YOUTUBE_PLAYLIST_ID,
+        maxResults=50
+    )
+    response = request.execute()
+    for item in response['items']:
+        video_id = item['snippet']['resourceId']['videoId']
+        title = item['snippet']['title']
+        url = f'https://www.youtube.com/watch?v={video_id}'
+        videos.append((title, url))
+    return videos
 
 
 async def get_last_week_youtube_urls(client: 'discord.Client'):
@@ -89,3 +60,61 @@ async def get_last_week_youtube_urls(client: 'discord.Client'):
             url = match.group(0)
             youtube_urls.add(url)
     return tuple(youtube_urls)
+
+
+def filter_new_youtube_urls(youtube_urls, existing_urls):
+    """
+    既存URLと比較して新規のYouTube動画URLのみを返す
+    """
+    return [url for url in youtube_urls if url not in existing_urls]
+
+
+def add_urls_to_playlist(new_urls):
+    """
+    新規YouTube動画URLリストをプレイリストに追加
+    """
+    for url in new_urls:
+        video_id_match = YOUTUBE_URL_PATTERN.search(url)
+        if video_id_match:
+            video_id = video_id_match.group(1)
+            youtube.playlistItems().insert(
+                part='snippet',
+                body={
+                    'snippet': {
+                        'playlistId': YOUTUBE_PLAYLIST_ID,
+                        'resourceId': {
+                            'kind': 'youtube#video',
+                            'videoId': video_id
+                        }
+                    }
+                }
+            ).execute()
+            print(f"Added to playlist: {url}")
+    except HttpError as e:
+        print(f"An HTTP error occurred: {e.resp.status} - {e.content}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+async def add_youTube_playlist_main(client: 'discord.Client'):
+    print("start: add_youTube_playlist_main")
+    try:
+        # 先週分のYouTube動画URLを取得
+        youtube_urls = await get_last_week_youtube_urls(client)
+        if not youtube_urls:
+            print("No YouTube URLs found in the last week.")
+            return
+
+        # プレイリストの既存動画を取得
+        existing_videos = await fetch_playlist_videos()
+        existing_urls = {url for title, url in existing_videos}
+
+        # 追加する動画URLをフィルタリング
+        new_urls = filter_new_youtube_urls(youtube_urls, existing_urls)
+        if not new_urls:
+            print("No new YouTube URLs to add to the playlist.")
+            return
+
+        # プレイリストに新しい動画を追加
+        await add_urls_to_playlist(new_urls)
+        print("end: add_youTube_playlist_main")
