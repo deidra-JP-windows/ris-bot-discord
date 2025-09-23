@@ -20,12 +20,6 @@ YOUTUBE_API_SERVICE_NAME = 'youtube'
 YOUTUBE_API_VERSION = 'v3'
 YOUTUBE_PLAYLIST_ID = os.getenv("YOUTUBE_PLAYLIST_ID")
 
-youtube = build(
-    YOUTUBE_API_SERVICE_NAME,
-    YOUTUBE_API_VERSION,
-    developerKey=DEVELOPER_KEY
-)
-
 
 async def fetch_playlist_videos():
     """
@@ -69,52 +63,55 @@ def filter_new_youtube_urls(youtube_urls, existing_urls):
     return [url for url in youtube_urls if url not in existing_urls]
 
 
-def add_urls_to_playlist(new_urls):
+async def add_urls_to_playlist(new_urls):
     """
     新規YouTube動画URLリストをプレイリストに追加
     """
     for url in new_urls:
-        video_id_match = YOUTUBE_URL_PATTERN.search(url)
-        if video_id_match:
-            video_id = video_id_match.group(1)
-            youtube.playlistItems().insert(
-                part='snippet',
-                body={
-                    'snippet': {
-                        'playlistId': YOUTUBE_PLAYLIST_ID,
-                        'resourceId': {
-                            'kind': 'youtube#video',
-                            'videoId': video_id
+        try:
+            video_id_match = YOUTUBE_URL_PATTERN.search(url)
+            if video_id_match:
+                video_id = video_id_match.group(1)
+                youtube.playlistItems().insert(
+                    part='snippet',
+                    body={
+                        'snippet': {
+                            'playlistId': YOUTUBE_PLAYLIST_ID,
+                            'resourceId': {
+                                'kind': 'youtube#video',
+                                'videoId': video_id
+                            }
                         }
                     }
-                }
-            ).execute()
-            print(f"Added to playlist: {url}")
-    except HttpError as e:
-        print(f"An HTTP error occurred: {e.resp.status} - {e.content}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+                ).execute()
+                print(f"Added to playlist: {url}")
+        except HttpError as e:
+            print(f"An HTTP error occurred: {e.resp.status} - {e.content}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
 
 async def add_youTube_playlist_main(client: 'discord.Client'):
     print("start: add_youTube_playlist_main")
-    try:
-        # 先週分のYouTube動画URLを取得
-        youtube_urls = await get_last_week_youtube_urls(client)
-        if not youtube_urls:
-            print("No YouTube URLs found in the last week.")
-            return
+    # 先週分のYouTube動画URLを取得
+    youtube_urls = await get_last_week_youtube_urls(client)
+    print(youtube_urls)
+    if not youtube_urls:
+        print("No YouTube URLs found in the last week.")
+        return
 
-        # プレイリストの既存動画を取得
-        existing_videos = await fetch_playlist_videos()
-        existing_urls = {url for title, url in existing_videos}
+    # プレイリストの既存動画を取得
+    existing_videos = await fetch_playlist_videos()
+    existing_urls = {url for title, url in existing_videos}
+    print(existing_urls)
 
-        # 追加する動画URLをフィルタリング
-        new_urls = filter_new_youtube_urls(youtube_urls, existing_urls)
-        if not new_urls:
-            print("No new YouTube URLs to add to the playlist.")
-            return
+    # 追加する動画URLをフィルタリング
+    new_urls = filter_new_youtube_urls(youtube_urls, existing_urls)
+    print(new_urls)
+    if not new_urls:
+        print("No new YouTube URLs to add to the playlist.")
+        return
 
-        # プレイリストに新しい動画を追加
-        await add_urls_to_playlist(new_urls)
-        print("end: add_youTube_playlist_main")
+    # プレイリストに新しい動画を追加
+    await add_urls_to_playlist(new_urls)
+    print("end: add_youTube_playlist_main")

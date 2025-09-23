@@ -17,7 +17,7 @@ client = discord.Client(intents=intents)
 @client.event
 async def on_ready():
     await birthday_notification_main(client)
-    await add_youTube_playlist_main(client)
+    #await add_youTube_playlist_main(client)
     await client.close()
 
 if __name__ == "__main__":
