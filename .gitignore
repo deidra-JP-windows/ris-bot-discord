@@ -1,2 +1,4 @@
 __pycache__/*
 *.pyc
+tooles_input/
+.env

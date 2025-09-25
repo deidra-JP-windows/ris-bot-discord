@@ -2,7 +2,7 @@ import os
 import discord
 from dotenv import load_dotenv
 from services.birthday_notification import birthday_notification_main
-from services.add_youTube_playlist import add_youTube_playlist_main
+from services.youtube_pickup_song import youtube_pickup_song_main
 
 # env読み込み
 load_dotenv()
@@ -17,7 +17,7 @@ client = discord.Client(intents=intents)
 @client.event
 async def on_ready():
     await birthday_notification_main(client)
-    #await add_youTube_playlist_main(client)
+    await youtube_pickup_song_main(client)
     await client.close()
 
 if __name__ == "__main__":

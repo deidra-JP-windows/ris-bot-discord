@@ -22,6 +22,8 @@ jobs:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           READ_BIRTHDAY_CHANNEL_ID: '1396340526009028700'
           SEND_GENERAL_CHANNEL_ID: '1362073632821612706'
+          READ_MUSIC_CHANNEL_ID: '1375317515361849455'
+          SEND_MUSIC_CHANNEL_ID: '1415399954654036039'
         run: |
           for d in bots/batch/*/; do
             echo "Running bot in $d"
@@ -29,6 +31,8 @@ jobs:
             echo "  DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:0:4}****"
             echo "  READ_BIRTHDAY_CHANNEL_ID: $READ_BIRTHDAY_CHANNEL_ID"
             echo "  SEND_GENERAL_CHANNEL_ID: $SEND_GENERAL_CHANNEL_ID"
+            echo "  READ_MUSIC_CHANNEL_ID: $READ_MUSIC_CHANNEL_ID"
+            echo "  SEND_MUSIC_CHANNEL_ID: $SEND_MUSIC_CHANNEL_ID"
             if [ -f "$d/requirements.txt" ]; then
               pip install -r "$d/requirements.txt"
             fi
