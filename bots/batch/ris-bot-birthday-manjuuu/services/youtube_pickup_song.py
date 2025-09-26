@@ -4,11 +4,8 @@ import discord
 import json
 import base64
 import random
-from apiclient.discovery import build
-from apiclient.errors import HttpError
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from google.oauth2 import service_account
 
 
 # env読み込み
