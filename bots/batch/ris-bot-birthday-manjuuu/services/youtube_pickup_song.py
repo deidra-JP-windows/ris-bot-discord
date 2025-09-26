@@ -78,7 +78,7 @@ async def post_youtube_urls(send_music_channel: 'discord.TextChannel', youtube_u
         await send_music_channel.send(f"{sender} のおすすめ！\n{url}")
 
 
-async def add_youTube_playlist_main(client: 'discord.Client'):
+async def youtube_pickup_song_main(client: 'discord.Client'):
     """
     メイン処理
     Args:
