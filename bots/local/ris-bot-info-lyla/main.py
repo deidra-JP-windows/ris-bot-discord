@@ -1,5 +1,6 @@
 import os
 import discord
+import asyncio
 from dotenv import load_dotenv
 from services.randam_string import randam_string_main
 
@@ -15,7 +16,8 @@ client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-    await randam_string_main(client)
+    # サービス層のメイン処理を非同期で開始
+    asyncio.create_task(randam_string_main(client))
 
 
 if __name__ == "__main__":
