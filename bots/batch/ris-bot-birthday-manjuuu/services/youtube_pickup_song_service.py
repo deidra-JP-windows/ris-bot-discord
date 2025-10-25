@@ -14,7 +14,6 @@ from google.oauth2 import service_account
 class YouTubePickupSongService:
 
 
-    # クラス初期化時に環境変数を読み込む
     def __init__(self):
         load_dotenv()
         # Repository secretsから取得する環境変数名に統一
@@ -24,7 +23,7 @@ class YouTubePickupSongService:
         self.YOUTUBE_URL_PATTERN = re.compile(r"https://(youtu\.be/|www\.youtube\.com/watch\?v=)([a-zA-Z0-9_-]{11})")
 
 
-    async def _get_all_youtube_urls(read_music_channel: 'discord.TextChannel'):
+    async def _get_all_youtube_urls(self, read_music_channel: 'discord.TextChannel'):
         """
         おすすめ曲チャンネルから全期間のYouTube動画URLと送信者名のタプルを取得
 
@@ -35,14 +34,14 @@ class YouTubePickupSongService:
         """
         youtube_url_senders = set()
         async for message in read_music_channel.history(limit=None):
-            for match in YOUTUBE_URL_PATTERN.finditer(message.content):
+            for match in self.YOUTUBE_URL_PATTERN.finditer(message.content):
                 url = match.group(0)
                 sender = message.author.display_name if hasattr(message.author, 'display_name') else str(message.author)
                 youtube_url_senders.add((url, sender))
         return tuple(youtube_url_senders)
 
 
-    def _random_sample_youtube_urls(youtube_url_senders, sample_size=3):
+    def _random_sample_youtube_urls(self, youtube_url_senders, sample_size=3):
         """
         YouTube動画URLと送信者のリストからランダムに指定数を抽出
 
@@ -55,8 +54,7 @@ class YouTubePickupSongService:
         return random.sample(youtube_url_senders, min(sample_size, len(youtube_url_senders)))
 
 
-    # おすすめ曲をピックアップするチャンネルからすべてのメッセージを削除
-    async def _clear_channel_messages(send_music_channel: 'discord.TextChannel'):
+    async def _clear_channel_messages(self, send_music_channel: 'discord.TextChannel'):
         """
         おすすめ曲をピックアップするチャンネルからすべてのメッセージを削除
 
@@ -69,8 +67,7 @@ class YouTubePickupSongService:
             await message.delete()
 
 
-    # おすすめ曲をピックアップするチャンネルに3件のYouTube動画URLを投稿
-    async def _post_youtube_urls(send_music_channel: 'discord.TextChannel', youtube_url_senders: tuple):
+    async def _post_youtube_urls(self, send_music_channel: 'discord.TextChannel', youtube_url_senders: tuple):
         """
         おすすめ曲をピックアップするチャンネルにYouTube動画URLと送信者を投稿
 
@@ -84,7 +81,7 @@ class YouTubePickupSongService:
             await send_music_channel.send(f"{sender} のおすすめ！\n{url}")
 
 
-    async def add_youTube_playlist_main(client: 'discord.Client'):
+    async def add_youTube_playlist_main(self, client: 'discord.Client'):
         """
         メイン処理
         Args:
@@ -94,19 +91,18 @@ class YouTubePickupSongService:
         """
         print("start: add_youTube_playlist_main")
         # チャンネルクライアントの取得
-        send_music_channel = client.get_channel(SEND_MUSIC_CHANNEL_ID)
-        read_music_channel = client.get_channel(READ_MUSIC_CHANNEL_ID)
+        send_music_channel = client.get_channel(self.SEND_MUSIC_CHANNEL_ID)
+        read_music_channel = client.get_channel(self.READ_MUSIC_CHANNEL_ID)
 
         # すべてのYouTube動画URLを取得
-        youtube_urls = await get_all_youtube_urls(read_music_channel)
+        youtube_urls = await self._get_all_youtube_urls(read_music_channel)
         if not youtube_urls:
             print("No YouTube URLs found.")
             return
         # ランダムに3件のみ抽出
-        youtube_urls = random_sample_youtube_urls(youtube_urls, sample_size=3)
-        print(f"Selected YouTube URLs: {youtube_urls}")
+        youtube_urls = self._random_sample_youtube_urls(youtube_urls, sample_size=3)
         # おすすめ曲をピックアップするチャンネルからすべてのメッセージを削除
-        await clear_channel_messages(send_music_channel)
+        await self._clear_channel_messages(send_music_channel)
         # おすすめ曲をピックアップするチャンネルに3件のYouTube動画URLを投稿
-        await post_youtube_urls(send_music_channel, youtube_urls)
+        await self._post_youtube_urls(send_music_channel, youtube_urls)
         print("end: add_youTube_playlist_main")

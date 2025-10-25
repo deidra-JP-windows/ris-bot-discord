@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 class BirthdayNotificationService:
 
 
-    # クラス初期化時に環境変数を読み込む
     def __init__(self):
         load_dotenv()
         # Repository secretsから取得する環境変数名に統一
