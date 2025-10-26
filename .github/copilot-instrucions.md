@@ -6,7 +6,7 @@
 - バックエンド
   - 3層アーキテクチャ(Controller→Service→Repository(Repository+Model))を必ず採用
     - main.* ファイルをエントリポイントとし、controller.* に渡す構成を採用
-      - バッチやツールなどServiceなどで解決する場合
+      - バッチやツールなどServiceなどで解決する場合はエントリポイント+Serviceのみ
     - 必ずインターフェイスとクラスを利用
       - ～サービスのクラス
     - 必ず型定義
