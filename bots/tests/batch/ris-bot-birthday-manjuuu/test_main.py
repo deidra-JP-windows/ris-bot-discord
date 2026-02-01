@@ -3,13 +3,14 @@ import asyncio
 from unittest.mock import patch
 import sys
 import os
-import main
 
 sys.path.append(
     os.path.join(
         os.path.dirname(__file__), "../../../../bots/batch/ris-bot-birthday-manjuuu"
     )
 )
+
+import main  # noqa: E402
 
 
 class TestMain(unittest.TestCase):
