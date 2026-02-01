@@ -1,0 +1,42 @@
+name: CI Unit Tests
+
+on:
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run unit tests
+        run: |
+          for test_dir in bots/tests/batch/*/; do
+            echo "Running tests in $test_dir"
+            
+            # 対応するbotのディレクトリ名を取得
+            bot_name=$(basename "$test_dir")
+            bot_dir="bots/batch/$bot_name"
+            
+            # botのrequirements.txtがあればインストール
+            if [ -f "$bot_dir/requirements.txt" ]; then
+              echo "Installing dependencies from $bot_dir/requirements.txt"
+              pip install -r "$bot_dir/requirements.txt"
+            fi
+            
+            # テストファイルを実行
+            if [ -f "$test_dir/test_main.py" ]; then
+              echo "Running test_main.py in $test_dir"
+              python "$test_dir/test_main.py" || exit 1
+            fi
+          done
+          
+          echo "All tests passed successfully!"
+
