@@ -224,6 +224,31 @@ A. コンテナの状態（起動/停止）を確認し、必要に応じて`bui
     python test_main.py
    ```
 
+## コード品質チェック
+
+このプロジェクトでは、コードの品質を保つために `black`（フォーマッター）と `flake8`（リンター）を使用しています。
+
+### ツールのインストール
+bot 実装時にインストールしている為、原則不要です。
+```bash
+pip install -r requirements.txt
+```
+# __pycache__ ディレクトリを削除
+find bots/ -type d -name __pycache__ -exec rm -rf {} +
+
+# .pycファイルを削除
+find bots/ -type f -name "*.pyc" -delete
+
+# フォーマットチェックのみ（修正しない）
+black --check bots/
+
+# 自動フォーマット実行（ファイルを修正）
+black bots/
+
+# リントチェック
+- flake8で `E203`（スライス記法の空白）と `W503`（演算子前の改行）を除外しているのは、blackとの互換性のためです
+flake8 bots/ --max-line-length=88 --extend-ignore=E203,W503
+
 ### 注意点
 - テストではモックを使用しており、実際のDiscordサーバーへの接続は行いません。
 - 各 bot のテストは原則テストサーバでの動作確認にとどめますが、複雑な計算ロジック & 集計などを含むケースのみテストコードを実装してください。

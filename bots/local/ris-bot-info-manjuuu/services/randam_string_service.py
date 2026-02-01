@@ -3,8 +3,7 @@ import random
 
 class RandamStringService:
 
-
-    async def send_random_game_title(self, message: "discord.Message") -> None:
+    async def send_random_game_title(self, message) -> None:
         """
         ランダムなゲームタイトルをチャンネルに送信
         Args:
@@ -22,8 +21,7 @@ class RandamStringService:
             "麻雀",
             "Apex Legends",
             "Chill雑談",
-            "Valorant"
+            "Valorant",
         ]
         random_title = random.choice(game_titles)
         await message.channel.send(f"今日のおすすめゲームタイトル: {random_title}")
-

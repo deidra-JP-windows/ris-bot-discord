@@ -15,6 +15,7 @@ intents.messages = True
 intents.message_content = True
 client = discord.Client(intents=intents)
 
+
 @client.event
 async def on_ready():
     birthday_service = BirthdayNotificationService()
@@ -24,6 +25,7 @@ async def on_ready():
     await youtube_service.add_youTube_playlist_main(client)
     await qiita_service.get_qiita_news_main(client)
     await client.close()
+
 
 if __name__ == "__main__":
     client.run(DISCORD_BOT_TOKEN)

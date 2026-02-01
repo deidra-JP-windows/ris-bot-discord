@@ -1,0 +1,32 @@
+name: CI Lint and Format
+
+on:
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install linting tools
+        run: |
+          pip install flake8 black
+
+      - name: Run Black (format check)
+        run: |
+          echo "Checking code formatting with Black..."
+          black --check --diff bots/
+
+      - name: Run flake8 (linting)
+        run: |
+          echo "Running flake8 linting..."
+          flake8 bots/ --max-line-length=88 --extend-ignore=E203,W503
