@@ -4,9 +4,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from services.randam_string_service import RandamStringService
 
-# env読み込み
 load_dotenv()
-# Repository secretsから取得する環境変数名に統一
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 intents = discord.Intents.default()
 intents.messages = True
@@ -17,11 +15,33 @@ randam_string_service = RandamStringService()
 
 @bot.command()
 async def health_check(ctx):
+    """
+    処理概要:
+        1. ヘルスチェックメッセージを送信
+    
+    Args:
+        ctx: Discordのコンテキストオブジェクト
+    
+    Returns:
+        None
+    """
+    # 1. ヘルスチェックメッセージを送信
     await ctx.send("生きてますよ！")
 
 
 @bot.command()
 async def random_game_title(ctx):
+    """
+    処理概要:
+        1. ランダムなゲームタイトルを送信
+    
+    Args:
+        ctx: Discordのコンテキストオブジェクト
+    
+    Returns:
+        None
+    """
+    # 1. ランダムなゲームタイトルを送信
     await randam_string_service.send_random_game_title(ctx.message)
 
 
