@@ -54,6 +54,8 @@
 - /bots/batch/ris-bot-birthday-manjuuu/services/add_youTube_playlist.py : YouTube再生リスト追加処理
 - /bots/batch/ris-bot-birthday-manjuuu/services/birthday_notification.py : 誕生日通知処理
 - /bots/batch/ris-bot-birthday-manjuuu/services/__pycache__/ : Pythonキャッシュ
+- /bots/local/ris-client-info-manjuuu/main.py : ローカル常駐型Bot本体（コマンド受信・応答）
+- /bots/local/ris-client-info-manjuuu/services/randam_string_service.py : 文字列生成、履歴取得、5-7-5判定などのサービス
 - /tooles/json2base64.sh : JSONファイルをbase64変換するユーティリティ
 
 
