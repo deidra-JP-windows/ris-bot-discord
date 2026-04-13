@@ -33,6 +33,20 @@ class RandamStringService:
         "氷柱",
         "木枯らし",
         "柚子湯",
+        # LOL
+        "LOL",
+        "MID",
+        "ミッド",
+        "ADC",
+        "アサシン",
+        "SUP",
+        "サポート",
+        "JUNGLE",
+        "ジャングル",
+        "TOP",
+        "トップ",
+        "PENTAKILL",
+        "ペンタキル",
     )
 
     @staticmethod
