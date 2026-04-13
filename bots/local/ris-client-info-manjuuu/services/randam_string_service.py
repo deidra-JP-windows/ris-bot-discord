@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 from datetime import datetime, timedelta
 import random
 import string
@@ -49,8 +50,7 @@ class RandamStringService:
         "ペンタキル",
     )
 
-    @staticmethod
-    def _hiragana_to_katakana(text: str) -> str:
+    def _hiragana_to_katakana(self, text: str) -> str:
         """ひらがなをカタカナへ正規化する。
 
         Args:
@@ -69,8 +69,7 @@ class RandamStringService:
                 result.append(char)
         return "".join(result)
 
-    @staticmethod
-    def _count_mora(reading: str) -> int:
+    def _count_mora(self, reading: str) -> int:
         """読み文字列からモーラ数を数える。
 
         小書きカナは直前の文字と一体で数えるため除外し、
@@ -92,6 +91,176 @@ class RandamStringService:
                 continue
             mora += 1
         return mora
+
+
+    def _is_hiragana_only(self, text: str) -> bool:
+        """文字列がひらがなのみで構成されるかを判定する。
+
+        Args:
+            text: 判定対象の文字列。
+
+        Returns:
+            ひらがなのみで構成される場合は True。
+        """
+        return bool(text) and all(0x3041 <= ord(ch) <= 0x3096 for ch in text)
+
+
+    def _contains_kanji(self, text: str) -> bool:
+        """文字列に漢字が含まれるかを判定する。
+
+        Args:
+            text: 判定対象の文字列。
+
+        Returns:
+            漢字を1文字以上含む場合は True。
+        """
+        return any(
+            (0x4E00 <= ord(ch) <= 0x9FFF) or (0x3400 <= ord(ch) <= 0x4DBF)
+            for ch in text
+        )
+
+
+    def _mora_candidates(self, base_mora: int, has_kanji: bool):
+        """トークンごとのモーラ候補を返す。
+
+        Args:
+            base_mora: 解析結果の基準モーラ数。
+            has_kanji: 対象トークンに漢字を含むかどうか。
+
+        Returns:
+            許容するモーラ数の候補配列。
+            漢字を含む場合は基準値の ±1 を含む。
+        """
+        if not has_kanji:
+            return [base_mora]
+        return sorted({max(1, base_mora - 1), base_mora, base_mora + 1})
+
+
+    def _boundary_penalty(self, analyzed, index: int) -> float:
+        """句切れ境界の自然さに応じたペナルティを返す。
+
+        Args:
+            analyzed: 形態素解析済みタプル配列。
+            index: 境界判定対象となる現在トークンのインデックス。
+
+        Returns:
+            境界の不自然さを表すペナルティ値。
+            値が小さいほど自然な分割として扱う。
+        """
+        if index >= len(analyzed) - 1:
+            return 0.0
+
+        cur_surface, _cur_reading, _cur_mora, cur_has_kanji, cur_pos1, _cur_pos2 = (
+            analyzed[index]
+        )
+        next_surface, _next_reading, _next_mora, _next_has_kanji, next_pos1, next_pos2 = (
+            analyzed[index + 1]
+        )
+
+        penalty = 0.0
+        # 助詞の直後は切れ目として自然になりやすいため優遇。
+        if cur_pos1 == "助詞":
+            penalty -= 1.0
+        # 活用のつながりを途中で切るのは不自然なため抑制。
+        if cur_pos1 in {"動詞", "形容詞"} and next_pos1 in {"助動詞"}:
+            penalty += 2.0
+        if cur_has_kanji and self._is_hiragana_only(next_surface):
+            penalty += 1.5
+        if next_pos2 == "接尾":
+            penalty += 1.0
+
+        return penalty
+
+
+    def _search_best_575(
+        self,
+        analyzed,
+        targets,
+        index,
+        target_index,
+        current_mora,
+        current_tokens,
+        lines,
+        score,
+    ):
+        """5-7-5 分割候補を探索し、最小ペナルティ解を返す。
+
+        Args:
+            analyzed: 形態素解析済みタプル配列。
+            targets: 目標モーラ配列（例: [5, 7, 5]）。
+            index: 現在処理中のトークンインデックス。
+            target_index: 現在処理中の句（上五/中七/下五）のインデックス。
+            current_mora: 現在の句で積算したモーラ数。
+            current_tokens: 現在の句に含めている表層形配列。
+            lines: 確定済みの句配列。
+            score: 現時点までの累積ペナルティ。
+
+        Returns:
+            解が存在する場合は (score, lines) を返す。
+            解がない場合は None を返す。
+        """
+        if target_index == len(targets):
+            if index == len(analyzed) and current_mora == 0 and not current_tokens:
+                return score, lines
+            return None
+
+        if index >= len(analyzed):
+            return None
+
+        surface, _reading, base_mora, has_kanji, _pos1, _pos2 = analyzed[index]
+        best = None
+        for mora in self._mora_candidates(base_mora, has_kanji):
+            next_mora = current_mora + mora
+            if next_mora > targets[target_index]:
+                continue
+
+            next_tokens = current_tokens + [surface]
+            mora_penalty = 0.25 * abs(mora - base_mora)
+            if next_mora == targets[target_index]:
+                found = self._search_best_575(
+                    analyzed,
+                    targets,
+                    index + 1,
+                    target_index + 1,
+                    0,
+                    [],
+                    lines + ["".join(next_tokens)],
+                    score + self._boundary_penalty(analyzed, index) + mora_penalty,
+                )
+            else:
+                found = self._search_best_575(
+                    analyzed,
+                    targets,
+                    index + 1,
+                    target_index,
+                    next_mora,
+                    next_tokens,
+                    lines,
+                    score + mora_penalty,
+                )
+
+            if found is not None and (best is None or found[0] < best[0]):
+                best = found
+
+        return best
+
+
+    def _is_same_user_channel_message(self, next_message, message) -> bool:
+        """待受対象メッセージかを判定する。
+
+        Args:
+            next_message: wait_for で受信したメッセージ。
+            message: 575コマンド起動時の元メッセージ。
+
+        Returns:
+            同一ユーザーかつ同一チャンネルで、Bot投稿でない場合は True。
+        """
+        return (
+            next_message.author == message.author
+            and next_message.channel == message.channel
+            and not next_message.author.bot
+        )
+
 
     def _analyze_mora(self, text: str):
         """入力テキストを形態素単位で読みとモーラ数に分解する
@@ -116,9 +285,6 @@ class RandamStringService:
         """
         analyzed = []
 
-        def _is_hiragana_only(s: str) -> bool:
-            return bool(s) and all(0x3041 <= ord(ch) <= 0x3096 for ch in s)
-
         tokens = self._tokenizer.tokenize(text)
         for token in tokens:
             pos = token.part_of_speech.split(",")
@@ -127,12 +293,9 @@ class RandamStringService:
             reading = token.reading if token.reading and token.reading != "*" else token.surface
             reading = self._hiragana_to_katakana(reading)
             mora = self._count_mora(reading)
-            has_kanji = any(
-                (0x4E00 <= ord(ch) <= 0x9FFF) or (0x3400 <= ord(ch) <= 0x4DBF)
-                for ch in token.surface
-            )
+            has_kanji = self._contains_kanji(token.surface)
             # Janomeが「漢字語 + 送り仮名」を分割した場合は結合して不自然な改行を避ける。
-            if analyzed and _is_hiragana_only(token.surface):
+            if analyzed and self._is_hiragana_only(token.surface):
                 prev_surface, prev_reading, prev_mora, prev_has_kanji, prev_pos1, prev_pos2 = analyzed[-1]
                 if prev_has_kanji and len(prev_surface) == 1:
                     analyzed[-1] = (
@@ -148,8 +311,8 @@ class RandamStringService:
             analyzed.append((token.surface, reading, mora, has_kanji, pos1, pos2))
         return analyzed
 
-    @staticmethod
-    def _split_575(analyzed):
+
+    def _split_575(self, analyzed):
         """解析済みトークン列を 5-7-5 に分割できるか判定する
         処理概要:
                 1. 目標拍を [5, 7, 5] として深さ優先探索を行う。
@@ -173,80 +336,11 @@ class RandamStringService:
         """
         targets = [5, 7, 5]
 
-        def _mora_candidates(base_mora: int, has_kanji: bool):
-            if not has_kanji:
-                return [base_mora]
-            return sorted({max(1, base_mora - 1), base_mora, base_mora + 1})
-
-        def _is_hiragana_only(s: str) -> bool:
-            return bool(s) and all(0x3041 <= ord(ch) <= 0x3096 for ch in s)
-
-        def _boundary_penalty(index: int) -> float:
-            if index >= len(analyzed) - 1:
-                return 0.0
-
-            cur_surface, _cur_reading, _cur_mora, cur_has_kanji, cur_pos1, _cur_pos2 = analyzed[index]
-            next_surface, _next_reading, _next_mora, _next_has_kanji, next_pos1, next_pos2 = analyzed[index + 1]
-
-            penalty = 0.0
-            # 助詞の直後は切れ目として自然になりやすいため優遇。
-            if cur_pos1 == "助詞":
-                penalty -= 1.0
-            # 活用のつながりを途中で切るのは不自然なため抑制。
-            if cur_pos1 in {"動詞", "形容詞"} and next_pos1 in {"助動詞"}:
-                penalty += 2.0
-            if cur_has_kanji and _is_hiragana_only(next_surface):
-                penalty += 1.5
-            if next_pos2 == "接尾":
-                penalty += 1.0
-
-            return penalty
-
-        def _dfs(index, target_index, current_mora, current_tokens, lines, score):
-            if target_index == len(targets):
-                if index == len(analyzed) and current_mora == 0 and not current_tokens:
-                    return score, lines
-                return None
-
-            if index >= len(analyzed):
-                return None
-
-            surface, _reading, base_mora, has_kanji, _pos1, _pos2 = analyzed[index]
-            best = None
-            for mora in _mora_candidates(base_mora, has_kanji):
-                next_mora = current_mora + mora
-                if next_mora > targets[target_index]:
-                    continue
-
-                next_tokens = current_tokens + [surface]
-                mora_penalty = 0.25 * abs(mora - base_mora)
-                if next_mora == targets[target_index]:
-                    found = _dfs(
-                        index + 1,
-                        target_index + 1,
-                        0,
-                        [],
-                        lines + ["".join(next_tokens)],
-                        score + _boundary_penalty(index) + mora_penalty,
-                    )
-                else:
-                    found = _dfs(
-                        index + 1,
-                        target_index,
-                        next_mora,
-                        next_tokens,
-                        lines,
-                        score + mora_penalty,
-                    )
-
-                if found is not None:
-                    if best is None or found[0] < best[0]:
-                        best = found
-
-            return best
-
-        result = _dfs(0, 0, 0, [], [], 0.0)
+        result = self._search_best_575(
+            analyzed, targets, 0, 0, 0, [], [], 0.0
+        )
         return result[1] if result is not None else None
+
 
     async def send_random_string(self, message) -> None:
         """ランダムな文字列を送信するサービスメソッド
@@ -375,18 +469,13 @@ class RandamStringService:
         """
         await message.channel.send("夏井先生です。終了する時は /manjuuu 退勤 と送ってください。")
 
-        def _check(next_message):
-            return (
-                next_message.author == message.author
-                and next_message.channel == message.channel
-                and not next_message.author.bot
-            )
+        check = partial(self._is_same_user_channel_message, message=message)
         
         # コマンド実行後、同一ユーザー/同一チャンネルの発言を待機
         while True:
             # メッセージ待機のタイムアウトは120分
             try:
-                next_msg = await client.wait_for("message", check=_check, timeout=7200.0)
+                next_msg = await client.wait_for("message", check=check, timeout=7200.0)
             except asyncio.TimeoutError:
                 await message.channel.send("夏井先生退勤。もう一度コマンドを実行してください。")
                 return
