@@ -48,7 +48,7 @@ class TestMain(unittest.TestCase):
 
         asyncio.run(self.client.on_message(message))
 
-        self.client.randam_string_service.send_random_chat_line.assert_awaited_once_with(
+        self.client.randam_string_service.send_random_chat_line.assert_awaited_once_with(  # noqa: E501
             message
         )
         self.client.randam_string_service.send_random_string.assert_not_awaited()
