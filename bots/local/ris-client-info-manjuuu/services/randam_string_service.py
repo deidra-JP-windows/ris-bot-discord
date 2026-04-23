@@ -52,10 +52,8 @@ class RandamStringService:
 
     def _hiragana_to_katakana(self, text: str) -> str:
         """ひらがなをカタカナへ正規化する。
-
         Args:
             text: 正規化対象の文字列。
-
         Returns:
             ひらがなをカタカナへ変換した文字列。
         """
@@ -71,13 +69,10 @@ class RandamStringService:
 
     def _count_mora(self, reading: str) -> int:
         """読み文字列からモーラ数を数える。
-
         小書きカナは直前の文字と一体で数えるため除外し、
         記号・空白もカウント対象外にする。
-
         Args:
             reading: カタカナ読み文字列。
-
         Returns:
             推定モーラ数。
         """
@@ -95,10 +90,8 @@ class RandamStringService:
 
     def _is_hiragana_only(self, text: str) -> bool:
         """文字列がひらがなのみで構成されるかを判定する。
-
         Args:
             text: 判定対象の文字列。
-
         Returns:
             ひらがなのみで構成される場合は True。
         """
@@ -107,10 +100,8 @@ class RandamStringService:
 
     def _contains_kanji(self, text: str) -> bool:
         """文字列に漢字が含まれるかを判定する。
-
         Args:
             text: 判定対象の文字列。
-
         Returns:
             漢字を1文字以上含む場合は True。
         """
@@ -122,11 +113,9 @@ class RandamStringService:
 
     def _mora_candidates(self, base_mora: int, has_kanji: bool):
         """トークンごとのモーラ候補を返す。
-
         Args:
             base_mora: 解析結果の基準モーラ数。
             has_kanji: 対象トークンに漢字を含むかどうか。
-
         Returns:
             許容するモーラ数の候補配列。
             漢字を含む場合は基準値の ±1 を含む。
@@ -138,11 +127,9 @@ class RandamStringService:
 
     def _boundary_penalty(self, analyzed, index: int) -> float:
         """句切れ境界の自然さに応じたペナルティを返す。
-
         Args:
             analyzed: 形態素解析済みタプル配列。
             index: 境界判定対象となる現在トークンのインデックス。
-
         Returns:
             境界の不自然さを表すペナルティ値。
             値が小さいほど自然な分割として扱う。
@@ -184,7 +171,6 @@ class RandamStringService:
         score,
     ):
         """5-7-5 分割候補を探索し、最小ペナルティ解を返す。
-
         Args:
             analyzed: 形態素解析済みタプル配列。
             targets: 目標モーラ配列（例: [5, 7, 5]）。
@@ -194,7 +180,6 @@ class RandamStringService:
             current_tokens: 現在の句に含めている表層形配列。
             lines: 確定済みの句配列。
             score: 現時点までの累積ペナルティ。
-
         Returns:
             解が存在する場合は (score, lines) を返す。
             解がない場合は None を返す。
@@ -247,7 +232,6 @@ class RandamStringService:
 
     def _is_same_user_channel_message(self, next_message, message) -> bool:
         """待受対象メッセージかを判定する。
-
         Args:
             next_message: wait_for で受信したメッセージ。
             message: 575コマンド起動時の元メッセージ。
@@ -329,7 +313,6 @@ class RandamStringService:
         Args:
             analyzed: (表層形, 読み, モーラ数, 漢字を含むかどうか, 品詞大分類,
                 品詞細分類1) のタプル配列。
-
         Returns:
             5-7-5 に分割できた場合は3行の文字列配列。
             分割できない場合は None。
@@ -347,10 +330,8 @@ class RandamStringService:
         処理概要:
             1. アルファベットと数字からランダムに12文字を選択
             2. 生成した文字列をチャンネルに送信
-        
         Args:
             message: Discordのメッセージオブジェクト
-        
         Returns:
             None
         """
@@ -364,10 +345,8 @@ class RandamStringService:
         """ヘルスチェックメッセージを送信するサービスメソッド
         処理概要:
             1. ヘルスチェックメッセージ「生存」をチャンネルに送信
-        
         Args:
             message: Discordのメッセージオブジェクト
-        
         Returns:
             None
         """
@@ -379,10 +358,8 @@ class RandamStringService:
         """挨拶メッセージを送信するサービスメソッド
         処理概要:
             1. 挨拶メッセージ「おはようございます！」をチャンネルに送信
-        
         Args:
             message: Discordのメッセージオブジェクト
-        
         Returns:
             None
         """
@@ -396,10 +373,8 @@ class RandamStringService:
             1. 一週間分のチャット履歴を取得(最大500件)
             2. 取得したメッセージからランダムに1行を選択
             3. 選択したメッセージをチャンネルに送信
-        
         Args:
             message: Discordのメッセージオブジェクト
-        
         Returns:
             None
         """
@@ -421,10 +396,8 @@ class RandamStringService:
         処理概要:
             1. ゲームタイトルのリストからランダムに1つ選択
             2. 選択したゲームタイトルをチャンネルに送信
-        
         Args:
             message: Discordのメッセージオブジェクト
-        
         Returns:
             None
         """
@@ -464,13 +437,15 @@ class RandamStringService:
             - モーラ数とは日本語の「音の拍（はく）」の数で、例えば「カタカナ」は「カ（1）タ（1）カ（1）ナ（1）」の4モーラ、「きゃ」は「きゃ（1）」の1モーラ、「ん」は「ん（1）」の1モーラとなる
         Args:
             message: Discordのメッセージオブジェクト
+        Print:
+            string: メッセージ
         Returns:
             None
         """
         await message.channel.send("夏井先生です。終了する時は /manjuuu 退勤 と送ってください。")
 
         check = partial(self._is_same_user_channel_message, message=message)
-        
+
         # コマンド実行後、同一ユーザー/同一チャンネルの発言を待機
         while True:
             # メッセージ待機のタイムアウトは120分
@@ -487,12 +462,9 @@ class RandamStringService:
             if text == "/manjuuu 退勤":
                 await message.channel.send("夏井先生退勤。")
                 return
-            
+
             # モーラ数を解析し、5-7-5として分割できるかを判定
             analyzed = self._analyze_mora(text)
-            total_mora = sum(
-                mora for _surface, _reading, mora, _has_kanji, _pos1, _pos2 in analyzed
-            )
             split_lines = self._split_575(analyzed)
             if split_lines is not None:
                 # 5-7-5形式であれば、音節を半角スペースで区切りチャンネルに送信
@@ -502,4 +474,3 @@ class RandamStringService:
                     await message.channel.send("あっぱれ！")
             else:
                 continue
-                

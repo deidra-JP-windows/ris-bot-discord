@@ -16,10 +16,8 @@ class MyClient(discord.Client):
         """
         処理概要:
             1. クライアントが準備完了時にユーザー名を出力
-        
         Args:
             None
-        
         Returns:
             None
         """
@@ -46,7 +44,6 @@ class MyClient(discord.Client):
             1. "/manjuuu ランダム文字列" コマンドは5%の確率でチャット履歴からランダム送信する
         Args:
             message: Discordのメッセージオブジェクト
-        
         Returns:
             None
         """
