@@ -87,7 +87,6 @@ class RandamStringService:
             mora += 1
         return mora
 
-
     def _is_hiragana_only(self, text: str) -> bool:
         """文字列がひらがなのみで構成されるかを判定する。
         Args:
@@ -96,7 +95,6 @@ class RandamStringService:
             ひらがなのみで構成される場合は True。
         """
         return bool(text) and all(0x3041 <= ord(ch) <= 0x3096 for ch in text)
-
 
     def _contains_kanji(self, text: str) -> bool:
         """文字列に漢字が含まれるかを判定する。
@@ -110,7 +108,6 @@ class RandamStringService:
             for ch in text
         )
 
-
     def _mora_candidates(self, base_mora: int, has_kanji: bool):
         """トークンごとのモーラ候補を返す。
         Args:
@@ -123,7 +120,6 @@ class RandamStringService:
         if not has_kanji:
             return [base_mora]
         return sorted({max(1, base_mora - 1), base_mora, base_mora + 1})
-
 
     def _boundary_penalty(self, analyzed, index: int) -> float:
         """句切れ境界の自然さに応じたペナルティを返す。
@@ -140,9 +136,14 @@ class RandamStringService:
         cur_surface, _cur_reading, _cur_mora, cur_has_kanji, cur_pos1, _cur_pos2 = (
             analyzed[index]
         )
-        next_surface, _next_reading, _next_mora, _next_has_kanji, next_pos1, next_pos2 = (
-            analyzed[index + 1]
-        )
+        (
+            next_surface,
+            _next_reading,
+            _next_mora,
+            _next_has_kanji,
+            next_pos1,
+            next_pos2,
+        ) = analyzed[index + 1]
 
         penalty = 0.0
         # 助詞の直後は切れ目として自然になりやすいため優遇。
@@ -157,7 +158,6 @@ class RandamStringService:
             penalty += 1.0
 
         return penalty
-
 
     def _search_best_575(
         self,
@@ -229,7 +229,6 @@ class RandamStringService:
 
         return best
 
-
     def _is_same_user_channel_message(self, next_message, message) -> bool:
         """待受対象メッセージかを判定する。
         Args:
@@ -244,7 +243,6 @@ class RandamStringService:
             and next_message.channel == message.channel
             and not next_message.author.bot
         )
-
 
     def _analyze_mora(self, text: str):
         """入力テキストを形態素単位で読みとモーラ数に分解する
@@ -274,13 +272,24 @@ class RandamStringService:
             pos = token.part_of_speech.split(",")
             pos1 = pos[0] if len(pos) > 0 else "*"
             pos2 = pos[1] if len(pos) > 1 else "*"
-            reading = token.reading if token.reading and token.reading != "*" else token.surface
+            reading = (
+                token.reading
+                if token.reading and token.reading != "*"
+                else token.surface
+            )
             reading = self._hiragana_to_katakana(reading)
             mora = self._count_mora(reading)
             has_kanji = self._contains_kanji(token.surface)
             # Janomeが「漢字語 + 送り仮名」を分割した場合は結合して不自然な改行を避ける。
             if analyzed and self._is_hiragana_only(token.surface):
-                prev_surface, prev_reading, prev_mora, prev_has_kanji, prev_pos1, prev_pos2 = analyzed[-1]
+                (
+                    prev_surface,
+                    prev_reading,
+                    prev_mora,
+                    prev_has_kanji,
+                    prev_pos1,
+                    prev_pos2,
+                ) = analyzed[-1]
                 if prev_has_kanji and len(prev_surface) == 1:
                     analyzed[-1] = (
                         prev_surface + token.surface,
@@ -294,7 +303,6 @@ class RandamStringService:
 
             analyzed.append((token.surface, reading, mora, has_kanji, pos1, pos2))
         return analyzed
-
 
     def _split_575(self, analyzed):
         """解析済みトークン列を 5-7-5 に分割できるか判定する
@@ -319,11 +327,8 @@ class RandamStringService:
         """
         targets = [5, 7, 5]
 
-        result = self._search_best_575(
-            analyzed, targets, 0, 0, 0, [], [], 0.0
-        )
+        result = self._search_best_575(analyzed, targets, 0, 0, 0, [], [], 0.0)
         return result[1] if result is not None else None
-
 
     async def send_random_string(self, message) -> None:
         """ランダムな文字列を送信するサービスメソッド
@@ -340,7 +345,6 @@ class RandamStringService:
         # 2. 生成した文字列をチャンネルに送信
         await message.channel.send(rand_str)
 
-
     async def send_health_check(self, message) -> None:
         """ヘルスチェックメッセージを送信するサービスメソッド
         処理概要:
@@ -353,7 +357,6 @@ class RandamStringService:
         # 1. ヘルスチェックメッセージ「生存」をチャンネルに送信
         await message.channel.send("生存")
 
-
     async def send_greeting(self, message) -> None:
         """挨拶メッセージを送信するサービスメソッド
         処理概要:
@@ -365,7 +368,6 @@ class RandamStringService:
         """
         # 1. 挨拶メッセージ「おはようございます！」をチャンネルに送信
         await message.channel.send("おはようございます！")
-
 
     async def send_random_chat_line(self, message) -> None:
         """ランダムなチャット履歴を送信するサービスメソッド
@@ -389,7 +391,6 @@ class RandamStringService:
         # 3. 選択したメッセージをチャンネルに送信
         if messages:
             await message.channel.send(random.choice(messages))
-
 
     async def send_random_game_title(self, message) -> None:
         """ランダムなゲームタイトルを送信するサービスメソッド
@@ -417,7 +418,6 @@ class RandamStringService:
         random_title = random.choice(game_titles)
         # 2. 選択したゲームタイトルをチャンネルに送信
         await message.channel.send(f"今日のおすすめゲームタイトル: {random_title}")
-    
 
     async def send_575_text(self, message, client) -> None:
         """5-7-5形式のテキストを生成して送信するサービスメソッド
@@ -442,7 +442,9 @@ class RandamStringService:
         Returns:
             None
         """
-        await message.channel.send("夏井先生です。終了する時は /manjuuu 退勤 と送ってください。")
+        await message.channel.send(
+            "夏井先生です。終了する時は /manjuuu 退勤 と送ってください。"
+        )
 
         check = partial(self._is_same_user_channel_message, message=message)
 
@@ -452,7 +454,9 @@ class RandamStringService:
             try:
                 next_msg = await client.wait_for("message", check=check, timeout=7200.0)
             except asyncio.TimeoutError:
-                await message.channel.send("夏井先生退勤。もう一度コマンドを実行してください。")
+                await message.channel.send(
+                    "夏井先生退勤。もう一度コマンドを実行してください。"
+                )
                 return
 
             # 受信したテキストを処理

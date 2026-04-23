@@ -5,7 +5,6 @@ import sys
 import unittest
 from unittest.mock import AsyncMock, Mock, patch
 
-
 sys.path.append(
     os.path.join(
         os.path.dirname(__file__), "../../../../bots/local/ris-client-info-manjuuu"

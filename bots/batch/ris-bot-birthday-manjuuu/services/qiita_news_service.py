@@ -14,10 +14,10 @@ class QiitaNewsService:
 
         補足:
             1. SEND_QIITA_CHANNEL_ID を環境変数から取得する
-        
+
         Args:
             None
-        
+
         Returns:
             None
         """
@@ -82,10 +82,10 @@ class QiitaNewsService:
         処理概要:
             1. 辞書からタイトルとURLを抽出
             2. フォーマットされたメッセージ文字列を生成
-        
+
         Args:
             qiita_news (dict): Qiita記事のタイトルとURLを含む辞書
-        
+
         Returns:
             str: フォーマットされたメッセージ文字列
         """
@@ -102,11 +102,11 @@ class QiitaNewsService:
         """
         処理概要:
             1. Discordのsendメソッドを使用してメッセージを送信
-        
+
         Args:
             send_qiita_channel (discord.TextChannel): メッセージを送信するチャンネルオブジェクト
             message (str): 送信するメッセージ文字列
-        
+
         Returns:
             None
         """
@@ -119,10 +119,10 @@ class QiitaNewsService:
             1. _get_qiita_top_newsメソッドを呼び出して最新記事を取得
             2. 取得した記事のタイトルとURLをフォーマット
             3. 指定されたDiscordチャンネルにメッセージを送信
-        
+
         Args:
             client (discord.Client): Discordクライアントオブジェクト
-        
+
         Returns:
             None
         """

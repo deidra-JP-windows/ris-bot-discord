@@ -15,10 +15,10 @@ class BirthdayNotificationService:
         補足:
             1. READ_BIRTHDAY_CHANNEL_ID と SEND_GENERAL_CHANNEL_ID を環境変数から取得する
             2. 年あり/年なしの複数フォーマットを受け付ける
-        
+
         Args:
             None
-        
+
         Returns:
             None
         """
@@ -45,10 +45,10 @@ class BirthdayNotificationService:
             1. 漢数字のマッピング辞書を参照
             2. 「十」を含む場合は十の位と一の位を分けて処理
             3. 一桁の場合は辞書から直接変換
-        
+
         Args:
             kanji_str (str): 変換したい漢数字の文字列(一から三十一まで)
-        
+
         Returns:
             int: 変換された整数値
         """
@@ -88,10 +88,10 @@ class BirthdayNotificationService:
             1. 正規表現で「(漢数字)月(漢数字)日」のパターンにマッチするか確認
             2. マッチした場合、月と日をそれぞれ整数に変換
             3. 「MM月DD日」形式の文字列を再構築して返す
-        
+
         Args:
             date_string (str): 変換したい日付文字列(例: 九月六日)
-        
+
         Returns:
             str: アラビア数字に変換した日付文字列(例: 9月6日)、マッチしない場合は元の文字列
         """
@@ -119,10 +119,10 @@ class BirthdayNotificationService:
 
         条件:
             1. 年を含まないフォーマットは 2024 年を補完して妥当性を確認する
-        
+
         Args:
             date_string (str): 変換したい日付文字列(様々なフォーマットに対応)
-        
+
         Returns:
             str | None: 'MM/DD' 形式の文字列。どのフォーマットにも一致しない場合は None
         """
@@ -150,10 +150,10 @@ class BirthdayNotificationService:
             2. メッセージ内容を日付フォーマットに変換し、誕生日辞書を作成
             3. 本日の日付(JST)と照合
             4. 本日が誕生日のメンバーがいれば通知メッセージを送信
-        
+
         Args:
             client: Discordのクライアントインスタンス
-        
+
         Returns:
             None
         """
