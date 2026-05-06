@@ -16,10 +16,8 @@ class MyClient(discord.Client):
         """
         処理概要:
             1. クライアントが準備完了時にユーザー名を出力
-        
         Args:
             None
-        
         Returns:
             None
         """
@@ -31,14 +29,21 @@ class MyClient(discord.Client):
         処理概要:
             1. メッセージがBot自身のものであれば無視
             2. メッセージ内容に応じて適切なサービスメソッドを呼び出す
-            3. ランダム文字列コマンドは5%の確率でチャット履歴からランダム送信
-
+            3. コマンドに応じて以下の処理に分岐
+                - ヘルスチェックの文字列を送信するコマンド
+                  - "/manjuuu ヘルスチェック" → send_health_check を実行
+                - 挨拶の文字列を送信するコマンド
+                  - "/manjuuu こんにちは" → send_greeting を実行
+                - ランダム文字列を送信するコマンド
+                  - "/manjuuu ランダム文字列" → send_random_string を実行
+                - ランダムなゲームタイトルの文字列を送信するコマンド
+                  - "/manjuuu ランダムゲーム" → send_random_game_title を実行
+                - 5-7-5形式のテキストを送信するコマンド
+                  - "/manjuuu 575" → send_575_text を実行
         条件:
-            1. /manjuuu ランダム文字列 のとき、5%の確率で send_random_chat_line を実行する
-        
+            1. "/manjuuu ランダム文字列" コマンドは5%の確率でチャット履歴からランダム送信する
         Args:
             message: Discordのメッセージオブジェクト
-        
         Returns:
             None
         """
@@ -56,6 +61,12 @@ class MyClient(discord.Client):
                 await self.randam_string_service.send_random_chat_line(message)
             else:
                 await self.randam_string_service.send_random_string(message)
+        # ランダムなゲームタイトルを送信するコマンド
+        elif message.content == "/manjuuu ランダムゲーム":
+            await self.randam_string_service.send_random_game_title(message)
+        # 5-7-5形式のテキストを送信するコマンド
+        elif message.content == "/manjuuu 575":
+            await self.randam_string_service.send_575_text(message, self)
 
 
 intents = discord.Intents.default()

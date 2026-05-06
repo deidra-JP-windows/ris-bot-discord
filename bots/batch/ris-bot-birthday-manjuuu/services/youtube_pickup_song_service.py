@@ -15,10 +15,10 @@ class YouTubePickupSongService:
 
         補足:
             1. youtu.be と youtube.com/watch?v= のURLに対応する
-        
+
         Args:
             None
-        
+
         Returns:
             None
         """
@@ -37,10 +37,10 @@ class YouTubePickupSongService:
             1. おすすめ曲チャンネルから全期間のメッセージを取得
             2. 正規表現でYouTube URLを抽出
             3. URLと送信者名のタプルをセットに格納して返す
-        
+
         Args:
             read_music_channel (discord.TextChannel): YouTube動画URLを取得するチャンネルオブジェクト
-        
+
         Returns:
             tuple: (YouTube動画URL, 送信者名) のタプル
         """
@@ -63,11 +63,11 @@ class YouTubePickupSongService:
         """
         処理概要:
             1. YouTube動画URLと送信者のリストからランダムに指定数を抽出
-        
+
         Args:
             youtube_url_senders (tuple): (URL,送信者)のタプル
             sample_size (int): 抽出する数(デフォルトは3)
-        
+
         Returns:
             list: 抽出された(YouTube動画URL,送信者)のリスト
         """
@@ -80,10 +80,10 @@ class YouTubePickupSongService:
         """
         処理概要:
             1. おすすめ曲をピックアップするチャンネルからすべてのメッセージを削除
-        
+
         Args:
             send_music_channel (discord.TextChannel): メッセージを削除するチャンネルオブジェクト
-        
+
         Returns:
             None
         """
@@ -97,11 +97,11 @@ class YouTubePickupSongService:
         """
         処理概要:
             1. おすすめ曲をピックアップするチャンネルにYouTube動画URLと送信者を投稿
-        
+
         Args:
             send_music_channel (discord.TextChannel): メッセージを投稿するチャンネルオブジェクト
             youtube_url_senders (tuple): 投稿する(YouTube動画URL,送信者)のタプル
-        
+
         Returns:
             None
         """
@@ -117,10 +117,10 @@ class YouTubePickupSongService:
             3. ランダムに3件のみ抽出
             4. おすすめ曲をピックアップするチャンネルからすべてのメッセージを削除
             5. おすすめ曲をピックアップするチャンネルに3件のYouTube動画URLを投稿
-        
+
         Args:
             client (discord.Client): Discordクライアントオブジェクト
-        
+
         Returns:
             None
         """

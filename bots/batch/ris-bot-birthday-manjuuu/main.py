@@ -21,10 +21,10 @@ async def on_ready():
         1. 各サービスのインスタンスを作成
         2. 誕生日通知、YouTubeプレイリスト、Qiitaニュースの各処理を実行
         3. クライアントを閉じる
-    
+
     Args:
         None
-    
+
     Returns:
         None
     """

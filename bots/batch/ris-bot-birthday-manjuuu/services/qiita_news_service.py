@@ -11,13 +11,10 @@ class QiitaNewsService:
         処理概要:
             1. 環境変数を読み込む
             2. チャンネルIDとQiita APIエンドポイントを初期化する
-
         補足:
             1. SEND_QIITA_CHANNEL_ID を環境変数から取得する
-        
         Args:
             None
-        
         Returns:
             None
         """
@@ -33,7 +30,6 @@ class QiitaNewsService:
             1. httpxライブラリを使用してQiita APIにGETリクエストを送信
             2. レスポンスからフィルタリングを行い、最新記事のタイトルとURLを抽出
             3. 抽出したデータを辞書形式で返す
-        
         補足:
             リクエストのフォーマット:
                 GET /api/v2/items?page=1&per_page=1 HTTP/1
@@ -48,10 +44,8 @@ class QiitaNewsService:
                     "title": " ブロックチェーンデータモデルのすべて [Sui Foundation Blog]",
                     "url": "https://qiita.com/nft/items/c9e2ed2f1198befe0de4"
                 }
-        
         Args:
             None
-        
         Returns:
             dict: 最新記事のタイトルとURLを含む辞書
         """
@@ -82,10 +76,8 @@ class QiitaNewsService:
         処理概要:
             1. 辞書からタイトルとURLを抽出
             2. フォーマットされたメッセージ文字列を生成
-        
         Args:
             qiita_news (dict): Qiita記事のタイトルとURLを含む辞書
-        
         Returns:
             str: フォーマットされたメッセージ文字列
         """
@@ -102,11 +94,9 @@ class QiitaNewsService:
         """
         処理概要:
             1. Discordのsendメソッドを使用してメッセージを送信
-        
         Args:
             send_qiita_channel (discord.TextChannel): メッセージを送信するチャンネルオブジェクト
             message (str): 送信するメッセージ文字列
-        
         Returns:
             None
         """
@@ -119,10 +109,8 @@ class QiitaNewsService:
             1. _get_qiita_top_newsメソッドを呼び出して最新記事を取得
             2. 取得した記事のタイトルとURLをフォーマット
             3. 指定されたDiscordチャンネルにメッセージを送信
-        
         Args:
             client (discord.Client): Discordクライアントオブジェクト
-        
         Returns:
             None
         """

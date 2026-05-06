@@ -6,23 +6,24 @@ def main():
     補足：
         1.
     前提:
-        1. 
+        1.
     条件:
-        1. 
+        1.
     制約:
         1.
     Args:
         None
     Inputs:
-        N (int): 
+        N (int):
     Prints:
-        str: 
+        str:
     Returns:
         None
     """
     # aaa（処理概要の1）
     N = int(input())
     # bbb（処理概要の2）
+    print(N)
     print("Hello, World!")
 
 

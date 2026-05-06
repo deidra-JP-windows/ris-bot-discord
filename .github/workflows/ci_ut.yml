@@ -37,6 +37,26 @@ jobs:
               python "$test_dir/test_main.py" || exit 1
             fi
           done
+
+          for test_dir in bots/tests/local/*/; do
+            echo "Running tests in $test_dir"
+
+            # 対応するbotのディレクトリ名を取得
+            bot_name=$(basename "$test_dir")
+            bot_dir="bots/local/$bot_name"
+
+            # botのrequirements.txtがあればインストール
+            if [ -f "$bot_dir/requirements.txt" ]; then
+              echo "Installing dependencies from $bot_dir/requirements.txt"
+              pip install -r "$bot_dir/requirements.txt"
+            fi
+
+            # テストファイルを実行
+            if [ -f "$test_dir/test_main.py" ]; then
+              echo "Running test_main.py in $test_dir"
+              python "$test_dir/test_main.py" || exit 1
+            fi
+          done
           
           echo "All tests passed successfully!"
 
